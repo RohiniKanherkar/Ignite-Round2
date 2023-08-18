@@ -1,6 +1,14 @@
 from flask import Flask, request, render_template
+import yaml
 
 app = Flask(__name__)
+
+def load_config():
+    with open("config.yaml", "r") as config_file:
+        config = yaml.safe_load(config_file)
+    return config
+
+config = load_config()
 
 @app.route('/')
 def index():
@@ -9,16 +17,8 @@ def index():
 @app.route('/hello')
 def hello():
     language = request.args.get('language', 'English')
-    greeting = get_greeting(language)
+    greeting = config['greetings'].get(language, 'Hello world')
     return greeting
 
-def get_greeting(language):
-    greetings = {
-        'English': 'Hello world',
-        'French': 'Bonjour le monde',
-        'Hindi': 'Namastey sansar'
-    }
-    return greetings.get(language, 'Hello world')
-
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    app.run(host=config['flask']['host'], port=config['flask']['port'], debug=config['flask']['debug'])
